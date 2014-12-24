@@ -2,7 +2,7 @@
 
 import pytest
 
-from mtgjson import CardDb
+from mtgjson import CardDb, ALL_SETS_URL
 
 
 @pytest.fixture
@@ -51,3 +51,7 @@ def test_get_sen_triplets(db):
     assert card.layout == 'normal'
     assert card.multiverseid == 180607
     assert card.imageName == 'sen triplets'
+
+
+def test_load_from_url():
+    CardDb(db_url=ALL_SETS_URL)

@@ -1,7 +1,13 @@
 import json
 import os
 
+import requests
+
 from .jsonproxy import JSONProxy
+
+
+ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json'
+ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json'
 
 
 class CardProxy(JSONProxy):
@@ -18,14 +24,21 @@ class CardProxy(JSONProxy):
 
 
 class CardDb(object):
-    def __init__(self, db_file=None):
-        if db_file is None:
+    def __init__(self, db_file=None, db_url=None):
+        if db_file is not None and db_url is not None:
+            raise RuntimeError('Cannot use both db_file and db_url')
+
+        # default is using the bundled file
+        if db_file is None and db_url is None:
             db_file = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 
-        self.db_file = db_file
-
-        with open(self.db_file) as inp:
-            self._card_db = json.load(inp)
+        if db_url is not None:
+            r = requests.get(db_url)
+            r.raise_for_status()
+            self._card_db = json.loads(r.text)
+        elif db_file is not None:
+            with open(db_file) as inp:
+                self._card_db = json.load(inp)
 
         self._id_map = {}
         self._name_map = {}
