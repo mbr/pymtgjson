@@ -13,8 +13,11 @@ import requests
 from .jsonproxy import JSONProxy
 
 
-ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json.zip'
-ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json.zip'
+ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json'
+ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json'
+
+ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
+ALL_SETS_X_ZIP_URL = ALL_SETS_X_URL + '.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 
@@ -109,7 +112,7 @@ class CardDb(object):
             return cls(json.load(inp))
 
     @classmethod
-    def from_url(cls, db_url=ALL_SETS_URL):
+    def from_url(cls, db_url=ALL_SETS_ZIP_URL):
         r = requests.get(db_url)
         r.raise_for_status()
 
