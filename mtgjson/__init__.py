@@ -54,12 +54,6 @@ class CardProxy(JSONProxy):
 
 
 class SearchMixin(object):
-    def get_card_by_id(self, id):
-        return self._id_map[id]
-
-    def get_card_by_name(self, name):
-        return self._name_map[name]
-
     def find_card_by_name(self, fname):
         return self._fname_idx[to_find_name(fname)]
 
@@ -67,14 +61,14 @@ class SearchMixin(object):
 class SetProxy(JSONProxy, SearchMixin):
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
-        self._name_map = {}
+        self.cards_by_name = {}
         self._fname_idx = {}
 
         cards = []
         for c in self.cards:
             card = CardProxy(c)
 
-            self._name_map[card.name] = card
+            self.cards_by_name[card.name] = card
             self._fname_idx[card.find_name] = card
             cards.append(card)
 
@@ -86,8 +80,8 @@ class CardDb(SearchMixin):
     def __init__(self, db_dict):
         self._card_db = db_dict
 
-        self._id_map = {}
-        self._name_map = {}
+        self.cards_by_id = {}
+        self.cards_by_name = {}
         self._fname_idx = {}
         self.sets = OrderedDict()
 
@@ -98,13 +92,13 @@ class CardDb(SearchMixin):
             s = SetProxy(_set)
             self.sets[s.code] = s
 
-            self._name_map.update(s._name_map)
+            self.cards_by_name.update(s.cards_by_name)
             self._fname_idx.update(s._fname_idx)
             for card in s.cards:
                 if not hasattr(card, 'multiverseid'):
                     continue
 
-                self._id_map[card.multiverseid] = card
+                self.cards_by_id[card.multiverseid] = card
 
     def __eq__(self, other):
         return self.name == other.name

@@ -37,19 +37,19 @@ def test_db_instantiation(db):
 
 
 def test_get_card_by_name(db):
-    card = db.get_card_by_name('Sen Triplets')
+    card = db.cards_by_name['Sen Triplets']
 
     assert card.multiverseid == 180607
 
 
 def test_get_card_by_id(db):
-    card = db.get_card_by_id(180607)
+    card = db.cards_by_id[180607]
 
     assert card.name == 'Sen Triplets'
 
 
 def test_get_sen_triplets(db):
-    card = db.get_card_by_id(180607)
+    card = db.cards_by_id[180607]
 
     assert card.name == 'Sen Triplets'
     assert card.manaCost == '{2}{W}{U}{B}'
@@ -86,7 +86,7 @@ def test_cards_from_set(db):
 
 
 def test_card_ascii_name(db):
-    card = db.get_card_by_id(23194)
+    card = db.cards_by_id[23194]
 
     assert card.ascii_name == 'AEther Rift'
 
