@@ -53,7 +53,18 @@ class CardProxy(JSONProxy):
         return to_find_name(self.name)
 
 
-class SetProxy(JSONProxy):
+class SearchMixin(object):
+    def get_card_by_id(self, id):
+        return self._id_map[id]
+
+    def get_card_by_name(self, name):
+        return self._name_map[name]
+
+    def find_card_by_name(self, fname):
+        return self._fname_idx[to_find_name(fname)]
+
+
+class SetProxy(JSONProxy, SearchMixin):
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
         self._name_map = {}
@@ -71,7 +82,7 @@ class SetProxy(JSONProxy):
 
 
 @total_ordering
-class CardDb(object):
+class CardDb(SearchMixin):
     def __init__(self, db_dict):
         self._card_db = db_dict
 
@@ -147,12 +158,3 @@ class CardDb(object):
                 names = zf.namelist()
                 assert len(names) == 1, 'One datafile in ZIP'
                 return cls.from_file(zf.open(names[0]))
-
-    def get_card_by_id(self, id):
-        return self._id_map[id]
-
-    def get_card_by_name(self, name):
-        return self._name_map[name]
-
-    def find_card_by_name(self, fname):
-        return self._fname_idx[to_find_name(fname)]
