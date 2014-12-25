@@ -78,22 +78,23 @@ class CardDb(object):
 
     def __lt__(self, other):
         try:
-            mynum = getattr(self, 'number', None)
-            othernum = getattr(other, 'number', None)
+            mynum = int(getattr(self, 'number', None))
+            othernum = int(getattr(other, 'number', None))
             return mynum < othernum
         except TypeError:
             pass  # not comparable, no valid integer number
 
         # try creating a pseudo collectors number
         def _getcol(c):
-            if len(c.colors) > 1:
-                return 'Gold'
-            elif len(c.colors) < 1:
+            if hasattr(c, 'colors'):
+                if len(c.colors) > 1:
+                    return 'Gold'
+                return c.colors[0]
+            else:
                 if 'Land' in c.types:
                     return 'Land'
                 else:
                     return 'Artifact'
-            return c.colors[0]
 
         col_order = ['White', 'Blue', 'Black', 'Red', 'Green', 'Gold',
                      'Artifact', 'Land']
