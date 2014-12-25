@@ -27,6 +27,7 @@ ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 _WS = re.compile('\s+')
 
 
+@total_ordering
 class CardProxy(JSONProxy):
     @property
     def img_url(self):
@@ -42,6 +43,38 @@ class CardProxy(JSONProxy):
     @property
     def ascii_name(self):
         return self.imageName
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __lt__(self, other):
+        try:
+            mynum = int(getattr(self, 'number', None))
+            othernum = int(getattr(other, 'number', None))
+            return mynum < othernum
+        except (TypeError, ValueError):
+            pass  # not comparable, no valid integer number
+
+        # try creating a pseudo collectors number
+        def _getcol(c):
+            if hasattr(c, 'colors'):
+                if len(c.colors) > 1:
+                    return 'Gold'
+                return c.colors[0]
+            else:
+                if 'Land' in c.types:
+                    return 'Land'
+                else:
+                    return 'Artifact'
+
+        col_order = ['White', 'Blue', 'Black', 'Red', 'Green', 'Gold',
+                     'Artifact', 'Land']
+
+        if col_order.index(_getcol(self)) < col_order.index(_getcol(other)):
+            return True
+
+        # go by name
+        return self.name < other.name
 
 
 class SetProxy(JSONProxy):
@@ -62,7 +95,6 @@ class SetProxy(JSONProxy):
         self.cards = sorted(cards)
 
 
-@total_ordering
 class CardDb(object):
     def __init__(self, db_dict):
         self._card_db = db_dict
@@ -86,38 +118,6 @@ class CardDb(object):
                     continue
 
                 self.cards_by_id[card.multiverseid] = card
-
-    def __eq__(self, other):
-        return self.name == other.name
-
-    def __lt__(self, other):
-        try:
-            mynum = int(getattr(self, 'number', None))
-            othernum = int(getattr(other, 'number', None))
-            return mynum < othernum
-        except TypeError:
-            pass  # not comparable, no valid integer number
-
-        # try creating a pseudo collectors number
-        def _getcol(c):
-            if hasattr(c, 'colors'):
-                if len(c.colors) > 1:
-                    return 'Gold'
-                return c.colors[0]
-            else:
-                if 'Land' in c.types:
-                    return 'Land'
-                else:
-                    return 'Artifact'
-
-        col_order = ['White', 'Blue', 'Black', 'Red', 'Green', 'Gold',
-                     'Artifact', 'Land']
-
-        if col_order.index(_getcol(self)) < col_order.index(_getcol(other)):
-            return True
-
-        # go by name
-        return self.name < other.name
 
     @classmethod
     def from_file(cls, db_file=ALL_SETS_PATH):

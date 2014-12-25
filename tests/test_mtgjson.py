@@ -82,7 +82,7 @@ def test_set_list(db):
 
 
 def test_cards_from_set(db):
-    assert db.sets.values()[0].cards[0].name == 'Air Elemental'
+    assert db.sets.values()[0].cards[0].name == 'Animate Wall'
 
 
 def test_card_ascii_name(db):
