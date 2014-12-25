@@ -29,19 +29,32 @@ _WS = re.compile('\s+')
 
 @total_ordering
 class CardProxy(JSONProxy):
+    """A wrapper for a card dictionary.
+
+    Provides additional methods and attributes onto the plain data from
+    mtgjson.com.
+
+    Cards support a total ordering that will use the set's release date
+    or if cards are from the same set, the collector's number. Cards without
+    a collectors number use the canonical ordering system based on
+    color/type/card name.
+    """
     @property
     def img_url(self):
+        """URL where an image of the card can be found."""
         return 'http://mtgimage.com/set/{}/{}.jpg'.format(
             self.set.code, self.imageName,
         )
 
     @property
     def gatherer_url(self):
+        """`Gatherer <http://gatherer.wizards.com>`_ link."""
         return ('http://gatherer.wizards.com/Pages/Card/'
                 'Details.aspx?multiverseid={}').format(self.multiverseid)
 
     @property
     def ascii_name(self):
+        """Simplified name (ascii characters, lowercase) for card."""
         return self.imageName
 
     def __eq__(self, other):
@@ -82,6 +95,10 @@ class CardProxy(JSONProxy):
 
 @total_ordering
 class SetProxy(JSONProxy):
+    """Wraps set dictionary with additional methods and attributes. Also
+    subject to total ordering based on release date.
+    """
+
     def __lt__(self, other):
         return self.releaseDate < other.releaseDate
 
@@ -106,6 +123,15 @@ class SetProxy(JSONProxy):
 
 
 class CardDb(object):
+    """The central object of the library. Upon instantiation, reads card data
+    into memory and creates various indices to allow easy card retrieval. The
+    data passed in is kept in memory and wrapped in a friendly interface.
+
+    Note that usually one of the factory method
+    (:func:`~mtgjson.CardDb.from_file` or :func:`~mtgjson.CardDb.from_url`) is
+    used to instantiate a db.
+
+    :param db_dict: Deserializied mtgjson.com ``AllSets.json``."""
     def __init__(self, db_dict):
         self._card_db = db_dict
 
@@ -131,6 +157,11 @@ class CardDb(object):
 
     @classmethod
     def from_file(cls, db_file=ALL_SETS_PATH):
+        """Reads card data from a JSON-file.
+
+        :param db_file: A file-like object or a path.
+        :return: A new :class:`~mtgjson.CardDb` instance.
+        """
         if callable(getattr(db_file, 'read', None)):
             return cls(json.load(db_file))
         with open(db_file) as inp:
@@ -138,6 +169,13 @@ class CardDb(object):
 
     @classmethod
     def from_url(cls, db_url=ALL_SETS_ZIP_URL):
+        """Load card data from a URL.
+
+        Uses :func:`requests.get` to fetch card data. Also handles zipfiles.
+
+        :param db_url: URL to fetch.
+        :return: A new :class:`~mtgjson.CardDb` instance.
+        """
         r = requests.get(db_url)
         r.raise_for_status()
 
