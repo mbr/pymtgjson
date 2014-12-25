@@ -83,3 +83,13 @@ def test_set_list(db):
 
 def test_cards_from_set(db):
     assert db.set_list[0].cards[0].name == 'Air Elemental'
+
+
+def test_card_ascii_name(db):
+    card = db.get_card_by_id(23194)
+
+    assert card.ascii_name == 'AEther Rift'
+
+
+def test_find_card_by_name(db):
+    assert db.find_card_by_name('aether   RiFt').name == u'Æther Rift'

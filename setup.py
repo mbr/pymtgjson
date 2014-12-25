@@ -20,5 +20,5 @@ setup(
     url='http://github.com/mbr/pymtgjson',
     license='MIT',
     packages=find_packages(exclude=['tests']),
-    install_requires=['docutils', 'requests', 'six'],
+    install_requires=['docutils', 'requests', 'six', 'unidecode'],
 )

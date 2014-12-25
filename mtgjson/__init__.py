@@ -6,9 +6,11 @@ from functools import total_ordering
 import json
 from operator import itemgetter
 import os
+import re
 import zipfile
 
 import requests
+from unidecode import unidecode
 
 from .jsonproxy import JSONProxy
 
@@ -20,6 +22,13 @@ ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
 ALL_SETS_X_ZIP_URL = ALL_SETS_X_URL + '.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
+
+
+_WS = re.compile('\s+')
+
+
+def to_find_name(name):
+    return _WS.sub(' ', unidecode(name)).strip().lower()
 
 
 class CardProxy(JSONProxy):
@@ -34,17 +43,27 @@ class CardProxy(JSONProxy):
         return ('http://gatherer.wizards.com/Pages/Card/'
                 'Details.aspx?multiverseid={}').format(self.multiverseid)
 
+    @property
+    def ascii_name(self):
+        return unidecode(self.name)
+
+    @property
+    def find_name(self):
+        return to_find_name(self.name)
+
 
 class SetProxy(JSONProxy):
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
         self._name_map = {}
+        self._fname_idx = {}
 
         cards = []
         for c in self.cards:
             card = CardProxy(c)
 
             self._name_map[card.name] = card
+            self._fname_idx[card.find_name] = card
             cards.append(card)
 
         self.cards = sorted(cards)
@@ -57,6 +76,7 @@ class CardDb(object):
 
         self._id_map = {}
         self._name_map = {}
+        self._fname_idx = {}
         self.set_list = []
 
         # sort sets by release date
@@ -67,6 +87,7 @@ class CardDb(object):
             self.set_list.append(s)
 
             self._name_map.update(s._name_map)
+            self._fname_idx.update(s._fname_idx)
             for card in s.cards:
                 if not hasattr(card, 'multiverseid'):
                     continue
@@ -131,3 +152,6 @@ class CardDb(object):
 
     def get_card_by_name(self, name):
         return self._name_map[name]
+
+    def find_card_by_name(self, fname):
+        return self._fname_idx[to_find_name(fname)]
