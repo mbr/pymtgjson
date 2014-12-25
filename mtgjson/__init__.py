@@ -11,7 +11,6 @@ import re
 import zipfile
 
 import requests
-from unidecode import unidecode
 
 from .jsonproxy import JSONProxy
 
@@ -28,15 +27,11 @@ ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 _WS = re.compile('\s+')
 
 
-def to_find_name(name):
-    return _WS.sub(' ', unidecode(name)).strip().lower()
-
-
 class CardProxy(JSONProxy):
     @property
     def img_url(self):
         return 'http://mtgimage.com/set/{}/{}.jpg'.format(
-            self.set.code, self.name,
+            self.set.code, self.imageName,
         )
 
     @property
@@ -46,23 +41,14 @@ class CardProxy(JSONProxy):
 
     @property
     def ascii_name(self):
-        return unidecode(self.name)
-
-    @property
-    def find_name(self):
-        return to_find_name(self.name)
+        return self.imageName
 
 
-class SearchMixin(object):
-    def find_card_by_name(self, fname):
-        return self.cards_by_fname[to_find_name(fname)]
-
-
-class SetProxy(JSONProxy, SearchMixin):
+class SetProxy(JSONProxy):
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
         self.cards_by_name = {}
-        self.cards_by_fname = {}
+        self.cards_by_ascii_name = {}
 
         cards = []
         for c in self.cards:
@@ -70,20 +56,20 @@ class SetProxy(JSONProxy, SearchMixin):
             card.set = self
 
             self.cards_by_name[card.name] = card
-            self.cards_by_fname[card.find_name] = card
+            self.cards_by_ascii_name[card.ascii_name] = card
             cards.append(card)
 
         self.cards = sorted(cards)
 
 
 @total_ordering
-class CardDb(SearchMixin):
+class CardDb(object):
     def __init__(self, db_dict):
         self._card_db = db_dict
 
         self.cards_by_id = {}
         self.cards_by_name = {}
-        self.cards_by_fname = {}
+        self.cards_by_ascii_name = {}
         self.sets = OrderedDict()
 
         # sort sets by release date
@@ -94,7 +80,7 @@ class CardDb(SearchMixin):
             self.sets[s.code] = s
 
             self.cards_by_name.update(s.cards_by_name)
-            self.cards_by_fname.update(s.cards_by_fname)
+            self.cards_by_ascii_name.update(s.cards_by_ascii_name)
             for card in s.cards:
                 if not hasattr(card, 'multiverseid'):
                     continue

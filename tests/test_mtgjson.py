@@ -88,11 +88,11 @@ def test_cards_from_set(db):
 def test_card_ascii_name(db):
     card = db.cards_by_id[23194]
 
-    assert card.ascii_name == 'AEther Rift'
+    assert card.ascii_name == 'aether rift'
 
 
 def test_find_card_by_name(db):
-    assert db.find_card_by_name('aether   RiFt').name == u'Æther Rift'
+    assert db.cards_by_ascii_name['aether rift'].name == u'Æther Rift'
 
 
 def test_get_specific_card(db):
