@@ -48,6 +48,9 @@ class CardProxy(JSONProxy):
         return self.name == other.name
 
     def __lt__(self, other):
+        if self.set != other.set:
+            return self.set.releaseDate < other.set.releaseDate
+
         try:
             mynum = int(getattr(self, 'number', None))
             othernum = int(getattr(other, 'number', None))

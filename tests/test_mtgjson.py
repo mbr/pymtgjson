@@ -97,3 +97,10 @@ def test_find_card_by_name(db):
 
 def test_get_specific_card(db):
     assert db.sets['4ED'].cards_by_name['Lightning Bolt'].set.code == '4ED'
+
+
+def test_different_sets_compare_nonequal(db):
+    c1 = db.sets['4ED'].cards[-1]
+    c2 = db.sets['ISD'].cards[0]
+
+    assert c1 < c2
