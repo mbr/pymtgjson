@@ -6,12 +6,14 @@ from mtgjson import CardDb
 
 
 @pytest.fixture(scope='module',
-                params=['url', 'file'])
+                params=['url', 'file', 'file-x'])
 def db(request):
     if request.param == 'url':
         return CardDb.from_url()
     elif request.param == 'file':
         return CardDb.from_file()
+    elif request.param == 'file-x':
+        return CardDb.from_file('tests/AllSets-x.json')
 
 
 def test_db_instantiation(db):

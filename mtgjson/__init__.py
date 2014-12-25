@@ -32,6 +32,21 @@ class CardProxy(JSONProxy):
                 'Details.aspx?multiverseid={}').format(self.multiverseid)
 
 
+class SetProxy(JSONProxy):
+    def __init__(self, data):
+        super(SetProxy, self).__init__(data)
+        self._name_map = {}
+
+        cards = []
+        for c in self.cards:
+            card = CardProxy(c)
+
+            self._name_map[card.name] = card
+            cards.append(card)
+
+        self.cards = sorted(cards)
+
+
 @total_ordering
 class CardDb(object):
     def __init__(self, db_dict):
@@ -45,21 +60,15 @@ class CardDb(object):
         sets = sorted(self._card_db.itervalues(),
                       key=itemgetter('releaseDate'))
         for _set in sets:
-            set = JSONProxy(_set)
-            set_cards = []
-            for c in set.cards:
-                card = CardProxy(c)
+            s = SetProxy(_set)
+            self.set_list.append(s)
 
-                self._name_map[card.name] = card
+            self._name_map.update(s._name_map)
+            for card in s.cards:
                 if not hasattr(card, 'multiverseid'):
                     continue
 
                 self._id_map[card.multiverseid] = card
-                card.set = set
-
-                set_cards.append(card)
-            set.cards = sorted(set_cards)
-            self.set_list.append(set)
 
     def __eq__(self, other):
         return self.name == other.name
