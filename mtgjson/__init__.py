@@ -2,7 +2,9 @@ try:
     from six.moves import cStringIO as StringIO
 except ImportError:
     from six import StringIO as StringIO
+from functools import total_ordering
 import json
+from operator import itemgetter
 import os
 import zipfile
 
@@ -30,16 +32,18 @@ class CardProxy(JSONProxy):
                 'Details.aspx?multiverseid={}').format(self.multiverseid)
 
 
+@total_ordering
 class CardDb(object):
     def __init__(self, db_dict):
         self._card_db = db_dict
 
         self._id_map = {}
         self._name_map = {}
+        self.set_list = []
 
         # sort sets by release date
         sets = sorted(self._card_db.itervalues(),
-                      key=lambda s: s['releaseDate'])
+                      key=itemgetter('releaseDate'))
         for _set in sets:
             set = JSONProxy(_set)
             set_cards = []
@@ -54,7 +58,39 @@ class CardDb(object):
                 card.set = set
 
                 set_cards.append(card)
-            set.cards = set_cards
+            set.cards = sorted(set_cards)
+            self.set_list.append(set)
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __lt__(self, other):
+        try:
+            mynum = getattr(self, 'number', None)
+            othernum = getattr(other, 'number', None)
+            return mynum < othernum
+        except TypeError:
+            pass  # not comparable, no valid integer number
+
+        # try creating a pseudo collectors number
+        def _getcol(c):
+            if len(c.colors) > 1:
+                return 'Gold'
+            elif len(c.colors) < 1:
+                if 'Land' in c.types:
+                    return 'Land'
+                else:
+                    return 'Artifact'
+            return c.colors[0]
+
+        col_order = ['White', 'Blue', 'Black', 'Red', 'Green', 'Gold',
+                     'Artifact', 'Land']
+
+        if col_order.index(_getcol(self)) < col_order.index(_getcol(other)):
+            return True
+
+        # go by name
+        return self.name < other.name
 
     @classmethod
     def from_file(cls, db_file=ALL_SETS_PATH):

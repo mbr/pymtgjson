@@ -55,3 +55,13 @@ def test_get_sen_triplets(db):
     assert card.layout == 'normal'
     assert card.multiverseid == 180607
     assert card.imageName == 'sen triplets'
+
+
+def test_set_list(db):
+    assert db.set_list[0].name == 'Limited Edition Alpha'  # should start with
+                                                           # alpha
+    assert len(db.set_list) > 20
+
+
+def test_cards_from_set(db):
+    assert db.set_list[0].cards[0].name == 'Air Elemental'
