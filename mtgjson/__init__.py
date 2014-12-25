@@ -1,13 +1,18 @@
+try:
+    from six.moves import cStringIO as StringIO
+except ImportError:
+    from six import StringIO as StringIO
 import json
 import os
+import zipfile
 
 import requests
 
 from .jsonproxy import JSONProxy
 
 
-ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json'
-ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json'
+ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json.zip'
+ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 
@@ -62,7 +67,15 @@ class CardDb(object):
     def from_url(cls, db_url=ALL_SETS_URL):
         r = requests.get(db_url)
         r.raise_for_status()
-        return cls(json.loads(r.content))
+
+        if r.headers['content-type'] == 'application/json':
+            return cls(json.loads(r.content))
+
+        if r.headers['content-type'] == 'application/zip':
+            with zipfile.ZipFile(StringIO(r.content), 'r') as zf:
+                names = zf.namelist()
+                assert len(names) == 1, 'One datafile in ZIP'
+                return cls.from_file(zf.open(names[0]))
 
     def get_card_by_id(self, id):
         return self._id_map[id]
