@@ -12,7 +12,7 @@ def read(fname):
 
 setup(
     name='mtgjson',
-    version='0.2dev1',
+    version='0.3.dev1',
     description='A python library for working with data from mtgjson.com.',
     long_description=read('README.rst'),
     author='Marc Brinkmann',
