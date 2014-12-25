@@ -1,8 +1,20 @@
 # coding: utf8
 
+import os
 import pytest
+from urllib import urlretrieve
 
-from mtgjson import CardDb
+from mtgjson import CardDb, ALL_SETS_URL, ALL_SETS_X_URL
+
+
+def download_set_file(url, fn):
+    tests_path = os.path.dirname(__file__)
+    fn = os.path.join(tests_path, fn)
+
+    if not os.path.exists(fn):
+        urlretrieve(url, fn)
+
+    return fn
 
 
 @pytest.fixture(scope='module',
@@ -11,9 +23,13 @@ def db(request):
     if request.param == 'url':
         return CardDb.from_url()
     elif request.param == 'file':
-        return CardDb.from_file()
+        return CardDb.from_file(
+            download_set_file(ALL_SETS_URL, 'AllSets.json')
+        )
     elif request.param == 'file-x':
-        return CardDb.from_file('tests/AllSets-x.json')
+        return CardDb.from_file(
+            download_set_file(ALL_SETS_X_URL, 'AllSets-x.json')
+        )
 
 
 def test_db_instantiation(db):
