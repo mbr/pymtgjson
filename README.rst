@@ -22,11 +22,3 @@ Example use
    u'At the beginning of your upkeep, you may put a charge counter on \xc6ther Vial.\n{T}: You may put a creature card with converted mana cost equal to the number of charge counters on \xc6ther Vial from your hand onto the battlefield.'
    >>> card.img_url
    'http://mtgimage.com/set/MMA/aether vial.jpg'
-
-
-API Reference
-=============
-
-.. class:: CardDb
-
-   Main database class.
