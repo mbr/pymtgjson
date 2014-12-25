@@ -49,7 +49,7 @@ class CardProxy(JSONProxy):
 
     def __lt__(self, other):
         if self.set != other.set:
-            return self.set.releaseDate < other.set.releaseDate
+            return self.set < other.set
 
         try:
             mynum = int(getattr(self, 'number', None))
@@ -80,7 +80,14 @@ class CardProxy(JSONProxy):
         return self.name < other.name
 
 
+@total_ordering
 class SetProxy(JSONProxy):
+    def __lt__(self, other):
+        return self.releaseDate < other.releaseDate
+
+    def __eq__(self, other):
+        return self.name == other.name
+
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
         self.cards_by_name = {}
