@@ -67,6 +67,7 @@ class SetProxy(JSONProxy, SearchMixin):
         cards = []
         for c in self.cards:
             card = CardProxy(c)
+            card.set = self
 
             self.cards_by_name[card.name] = card
             self.cards_by_fname[card.find_name] = card

@@ -93,3 +93,7 @@ def test_card_ascii_name(db):
 
 def test_find_card_by_name(db):
     assert db.find_card_by_name('aether   RiFt').name == u'Æther Rift'
+
+
+def test_get_specific_card(db):
+    assert db.sets['4ED'].cards_by_name['Lightning Bolt'].set.code == '4ED'
