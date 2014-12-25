@@ -2,6 +2,7 @@ try:
     from six.moves import cStringIO as StringIO
 except ImportError:
     from six import StringIO as StringIO
+from collections import OrderedDict
 from functools import total_ordering
 import json
 from operator import itemgetter
@@ -77,14 +78,14 @@ class CardDb(object):
         self._id_map = {}
         self._name_map = {}
         self._fname_idx = {}
-        self.set_list = []
+        self.sets = OrderedDict()
 
         # sort sets by release date
         sets = sorted(self._card_db.itervalues(),
                       key=itemgetter('releaseDate'))
         for _set in sets:
             s = SetProxy(_set)
-            self.set_list.append(s)
+            self.sets[s.code] = s
 
             self._name_map.update(s._name_map)
             self._fname_idx.update(s._fname_idx)

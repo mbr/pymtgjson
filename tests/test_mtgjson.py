@@ -76,13 +76,13 @@ def test_get_sen_triplets(db):
 
 
 def test_set_list(db):
-    assert db.set_list[0].name == 'Limited Edition Alpha'  # should start with
-                                                           # alpha
-    assert len(db.set_list) > 20
+    # should start with alpha
+    assert db.sets.values()[0].name == 'Limited Edition Alpha'
+    assert len(db.sets) > 20
 
 
 def test_cards_from_set(db):
-    assert db.set_list[0].cards[0].name == 'Air Elemental'
+    assert db.sets.values()[0].cards[0].name == 'Air Elemental'
 
 
 def test_card_ascii_name(db):
