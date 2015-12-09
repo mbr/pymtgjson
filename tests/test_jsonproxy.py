@@ -5,12 +5,7 @@ from mtgjson.jsonproxy import JSONProxy
 
 @pytest.fixture
 def data():
-    return {
-        'foo': 'bar',
-        'int': 42,
-        'boolean': True,
-        'sublist': [1, 2, 3],
-    }
+    return {'foo': 'bar', 'int': 42, 'boolean': True, 'sublist': [1, 2, 3], }
 
 
 @pytest.fixture
