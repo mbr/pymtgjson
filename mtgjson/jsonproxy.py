@@ -5,7 +5,7 @@ class JSONProxy(object):
     def __getattr__(self, key):
         try:
             return self.__data[key]
-        except KeyError, e:
+        except KeyError as e:
             raise AttributeError(e)
 
     def _get_raw_data(self):

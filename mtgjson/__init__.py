@@ -1,19 +1,16 @@
-try:
-    from six.moves import cStringIO as StringIO
-except ImportError:
-    from six import StringIO as StringIO
 from collections import OrderedDict
 from functools import total_ordering
 import json
+import io
 from operator import itemgetter
 import os
 import re
 import zipfile
 
 import requests
+import six
 
 from .jsonproxy import JSONProxy
-
 
 ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json'
 ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json'
@@ -22,7 +19,6 @@ ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
 ALL_SETS_X_ZIP_URL = ALL_SETS_X_URL + '.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
-
 
 _WS = re.compile('\s+')
 
@@ -39,12 +35,12 @@ class CardProxy(JSONProxy):
     a collectors number use the canonical ordering system based on
     color/type/card name.
     """
+
     @property
     def img_url(self):
         """URL where an image of the card can be found."""
-        return 'http://mtgimage.com/set/{}/{}.jpg'.format(
-            self.set.code, self.imageName,
-        )
+        return 'http://mtgimage.com/set/{}/{}.jpg'.format(self.set.code,
+                                                          self.imageName, )
 
     @property
     def gatherer_url(self):
@@ -132,6 +128,7 @@ class CardDb(object):
     used to instantiate a db.
 
     :param db_dict: Deserializied mtgjson.com ``AllSets.json``."""
+
     def __init__(self, db_dict):
         self._card_db = db_dict
 
@@ -141,8 +138,9 @@ class CardDb(object):
         self.sets = OrderedDict()
 
         # sort sets by release date
-        sets = sorted(self._card_db.itervalues(),
-                      key=itemgetter('releaseDate'))
+        sets = sorted(
+            six.itervalues(self._card_db),
+            key=itemgetter('releaseDate'))
         for _set in sets:
             s = SetProxy(_set)
             self.sets[s.code] = s
@@ -164,6 +162,7 @@ class CardDb(object):
         """
         if callable(getattr(db_file, 'read', None)):
             return cls(json.load(db_file))
+
         with open(db_file) as inp:
             return cls(json.load(inp))
 
@@ -180,10 +179,12 @@ class CardDb(object):
         r.raise_for_status()
 
         if r.headers['content-type'] == 'application/json':
-            return cls(json.loads(r.content))
+            return cls(json.loads(r.text))
 
         if r.headers['content-type'] == 'application/zip':
-            with zipfile.ZipFile(StringIO(r.content), 'r') as zf:
+            with zipfile.ZipFile(six.BytesIO(r.content), 'r') as zf:
                 names = zf.namelist()
                 assert len(names) == 1, 'One datafile in ZIP'
-                return cls.from_file(zf.open(names[0]))
+                return cls.from_file(io.TextIOWrapper(
+                    zf.open(names[0]),
+                    encoding='utf8'))

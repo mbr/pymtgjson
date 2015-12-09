@@ -2,7 +2,7 @@
 
 import os
 import pytest
-from urllib import urlretrieve
+import requests
 
 from mtgjson import CardDb, ALL_SETS_URL, ALL_SETS_X_URL
 
@@ -12,7 +12,11 @@ def download_set_file(url, fn):
     fn = os.path.join(tests_path, fn)
 
     if not os.path.exists(fn):
-        urlretrieve(url, fn)
+        resp = requests.get(url)
+        resp.raise_for_status()
+
+        with open(fn, 'wb') as out:
+            out.write(resp.content)
 
     return fn
 
@@ -77,12 +81,12 @@ def test_get_sen_triplets(db):
 
 def test_set_list(db):
     # should start with alpha
-    assert db.sets.values()[0].name == 'Limited Edition Alpha'
+    assert list(db.sets.values())[0].name == 'Limited Edition Alpha'
     assert len(db.sets) > 20
 
 
 def test_cards_from_set(db):
-    assert db.sets.values()[0].cards[0].name == 'Animate Wall'
+    assert list(db.sets.values())[0].cards[0].name == 'Animate Wall'
 
 
 def test_card_ascii_name(db):
