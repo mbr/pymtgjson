@@ -7,8 +7,8 @@ from setuptools import setup, find_packages
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname), 'rb').read
-    ().decode('utf8')
+    with open(os.path.join(os.path.dirname(__file__), fname), 'rb') as f:
+        return f.read().decode('utf8')
 
 
 setup(name='mtgjson',
