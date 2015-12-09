@@ -21,7 +21,6 @@ html_theme_options = {
     'show_powered_by': False,
     # required for monokai:
     'pre_bg': '#292429',
-    
 }
 html_sidebars = {
     '**': [
@@ -35,4 +34,5 @@ html_sidebars = {
 
 intersphinx_mapping = {
     'http://docs.python.org/': None,
+    'http://docs.python-requests.org/en/latest/': None,
 }
