@@ -2,8 +2,8 @@
 
 project = u'pymtgjson'
 copyright = u'2015, Marc Brinkmann'
-version = '0.4'
-release = '0.4.dev1'
+version = '0.4.0'
+release = '0.4.0'
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'alabaster']
 source_suffix = '.rst'
