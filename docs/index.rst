@@ -45,7 +45,7 @@ dictionary (i.e. the output of :func:`~json.loads`) directly to
 
    .. attribute:: cards_by_name
 
-      Like :attr:`~mtgjson.CardProxy.cards_by_id`, but indexed by card name::
+      Like ``mtgjson.CardProxy.cards_by_id``, but indexed by card name::
 
           card = db.cards_by_name['Sen Triplets']
 
@@ -83,7 +83,7 @@ Sets, similar to cards are wrapped in :class:`~mtgjson.SetProxy`:
 
    .. attribute:: cards_by_id
 
-      Similar to :attr:`mtgjson.CardDb.cards_by_id`, but will always point to
+      Similar to ``mtgjson.CardDb.cards_by_id``, but will always point to
       the card instance of this specific set instead of the latest.
 
    .. attribute:: cards_by_name
