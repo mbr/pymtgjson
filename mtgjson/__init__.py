@@ -163,7 +163,7 @@ class CardDb(object):
         if callable(getattr(db_file, 'read', None)):
             return cls(json.load(db_file))
 
-        with open(db_file) as inp:
+        with io.open(db_file, encoding='utf8') as inp:
             return cls(json.load(inp))
 
     @classmethod
