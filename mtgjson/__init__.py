@@ -69,7 +69,7 @@ class CardProxy(JSONProxy):
 
         # try creating a pseudo collectors number
         def _getcol(c):
-            if hasattr(c, 'colors'):
+            if hasattr(c, 'colors') and len(c.colors) > 0:
                 if len(c.colors) > 1:
                     return 'Gold'
                 return c.colors[0]
