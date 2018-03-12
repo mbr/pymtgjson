@@ -96,7 +96,7 @@ def test_card_ascii_name(db):
 
 
 def test_cards_by_ascii_name(db):
-    assert db.cards_by_ascii_name['aether rift'].name == u'Æther Rift'
+    assert db.cards_by_ascii_name['aether rift'].name == u'Aether Rift'
 
 
 def test_get_specific_card(db):
