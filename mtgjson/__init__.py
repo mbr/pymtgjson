@@ -12,8 +12,8 @@ import six
 
 from .jsonproxy import JSONProxy
 
-ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json'
-ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json'
+ALL_SETS_URL = 'https://mtgjson.com/json/AllSets.json'
+ALL_SETS_X_URL = 'https://mtgjson.com/json/AllSets.json'
 
 ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
 ALL_SETS_X_ZIP_URL = ALL_SETS_X_URL + '.zip'
@@ -37,21 +37,10 @@ class CardProxy(JSONProxy):
     """
 
     @property
-    def img_url(self):
-        """URL where an image of the card can be found."""
-        return 'http://mtgimage.com/set/{}/{}.jpg'.format(self.set.code,
-                                                          self.imageName, )
-
-    @property
     def gatherer_url(self):
         """`Gatherer <http://gatherer.wizards.com>`_ link."""
         return ('http://gatherer.wizards.com/Pages/Card/'
-                'Details.aspx?multiverseid={}').format(self.multiverseid)
-
-    @property
-    def ascii_name(self):
-        """Simplified name (ascii characters, lowercase) for card."""
-        return self.imageName
+                'Details.aspx?multiverseid={}').format(self.multiverseId)
 
     def __eq__(self, other):
         return self.name == other.name
@@ -71,16 +60,15 @@ class CardProxy(JSONProxy):
         def _getcol(c):
             if hasattr(c, 'colors') and len(c.colors) > 0:
                 if len(c.colors) > 1:
-                    return 'Gold'
+                    return 'M'
                 return c.colors[0]
             else:
-                if 'Land' in c.types:
-                    return 'Land'
+                if 'L' in c.types:
+                    return 'L'
                 else:
-                    return 'Artifact'
+                    return 'A'
 
-        col_order = ['White', 'Blue', 'Black', 'Red', 'Green', 'Gold',
-                     'Artifact', 'Land']
+        col_order = ['W', 'U', 'B', 'R', 'G', 'M', 'A', 'L']
 
         if col_order.index(_getcol(self)) < col_order.index(_getcol(other)):
             return True
@@ -104,7 +92,6 @@ class SetProxy(JSONProxy):
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
         self.cards_by_name = {}
-        self.cards_by_ascii_name = {}
 
         cards = []
         for c in self.cards:
@@ -112,7 +99,6 @@ class SetProxy(JSONProxy):
             card.set = self
 
             self.cards_by_name[card.name] = card
-            self.cards_by_ascii_name[card.ascii_name] = card
             cards.append(card)
 
         self.cards = sorted(cards)
@@ -134,7 +120,6 @@ class CardDb(object):
 
         self.cards_by_id = {}
         self.cards_by_name = {}
-        self.cards_by_ascii_name = {}
         self.sets = OrderedDict()
 
         # sort sets by release date
@@ -146,12 +131,11 @@ class CardDb(object):
             self.sets[s.code] = s
 
             self.cards_by_name.update(s.cards_by_name)
-            self.cards_by_ascii_name.update(s.cards_by_ascii_name)
             for card in s.cards:
-                if not hasattr(card, 'multiverseid'):
+                if not hasattr(card, 'multiverseId'):
                     continue
 
-                self.cards_by_id[card.multiverseid] = card
+                self.cards_by_id[card.multiverseId] = card
 
     @classmethod
     def from_file(cls, db_file=ALL_SETS_PATH):
