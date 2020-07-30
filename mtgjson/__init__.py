@@ -12,11 +12,9 @@ import six
 
 from .jsonproxy import JSONProxy
 
-ALL_SETS_URL = 'http://mtgjson.com/json/AllSets.json'
-ALL_SETS_X_URL = 'http://mtgjson.com/json/AllSets-x.json'
+ALL_SETS_URL = 'https://mtgjson.com/json/AllSets.json'
 
 ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
-ALL_SETS_X_ZIP_URL = ALL_SETS_X_URL + '.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 
@@ -38,20 +36,20 @@ class CardProxy(JSONProxy):
 
     @property
     def img_url(self):
-        """URL where an image of the card can be found."""
-        return 'http://mtgimage.com/set/{}/{}.jpg'.format(self.set.code,
-                                                          self.imageName, )
+        """`Gatherer <https://gatherer.wizards.com>` image link."""
+        return ('https://gatherer.wizards.com/Handlers/Image.ashx'
+                '?multiverseid={}&type=card').format(self.multiverseId)
 
     @property
     def gatherer_url(self):
-        """`Gatherer <http://gatherer.wizards.com>`_ link."""
-        return ('http://gatherer.wizards.com/Pages/Card/'
-                'Details.aspx?multiverseid={}').format(self.multiverseid)
+        """`Gatherer <https://gatherer.wizards.com>` card details link."""
+        return ('https://gatherer.wizards.com/Pages/Card/Details.aspx'
+                '?multiverseid={}').format(self.multiverseId)
 
     @property
     def ascii_name(self):
-        """Simplified name (ascii characters, lowercase) for card."""
-        return self.imageName
+        """Simplified name (ascii characters, lowercase) for card.""" 
+        return getattr(self, 'asciiName', self.name.lower())
 
     def __eq__(self, other):
         return self.name == other.name
@@ -71,16 +69,15 @@ class CardProxy(JSONProxy):
         def _getcol(c):
             if hasattr(c, 'colors') and len(c.colors) > 0:
                 if len(c.colors) > 1:
-                    return 'Gold'
+                    return 'M'
                 return c.colors[0]
             else:
-                if 'Land' in c.types:
-                    return 'Land'
+                if 'L' in c.types:
+                    return 'L'
                 else:
-                    return 'Artifact'
+                    return 'A'
 
-        col_order = ['White', 'Blue', 'Black', 'Red', 'Green', 'Gold',
-                     'Artifact', 'Land']
+        col_order = ['W', 'U', 'B', 'R', 'G', 'M', 'A', 'L']
 
         if col_order.index(_getcol(self)) < col_order.index(_getcol(other)):
             return True
@@ -148,10 +145,10 @@ class CardDb(object):
             self.cards_by_name.update(s.cards_by_name)
             self.cards_by_ascii_name.update(s.cards_by_ascii_name)
             for card in s.cards:
-                if not hasattr(card, 'multiverseid'):
+                if not hasattr(card, 'multiverseId'):
                     continue
 
-                self.cards_by_id[card.multiverseid] = card
+                self.cards_by_id[card.multiverseId] = card
 
     @classmethod
     def from_file(cls, db_file=ALL_SETS_PATH):
