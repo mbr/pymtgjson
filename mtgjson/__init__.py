@@ -13,10 +13,8 @@ import six
 from .jsonproxy import JSONProxy
 
 ALL_SETS_URL = 'https://mtgjson.com/json/AllSets.json'
-ALL_SETS_X_URL = 'https://mtgjson.com/json/AllSets.json'
 
 ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
-ALL_SETS_X_ZIP_URL = ALL_SETS_X_URL + '.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 
@@ -37,10 +35,21 @@ class CardProxy(JSONProxy):
     """
 
     @property
+    def img_url(self):
+        """`Gatherer <https://gatherer.wizards.com>` image link."""
+        return ('https://gatherer.wizards.com/Handlers/Image.ashx'
+                '?multiverseid={}&type=card').format(self.multiverseId)
+
+    @property
     def gatherer_url(self):
-        """`Gatherer <http://gatherer.wizards.com>`_ link."""
-        return ('http://gatherer.wizards.com/Pages/Card/'
-                'Details.aspx?multiverseid={}').format(self.multiverseId)
+        """`Gatherer <https://gatherer.wizards.com>` card details link."""
+        return ('https://gatherer.wizards.com/Pages/Card/Details.aspx'
+                '?multiverseid={}').format(self.multiverseId)
+
+    @property
+    def ascii_name(self):
+        """Simplified name (ascii characters, lowercase) for card.""" 
+        return getattr(self, 'asciiName', self.name.lower())
 
     def __eq__(self, other):
         return self.name == other.name
@@ -92,6 +101,7 @@ class SetProxy(JSONProxy):
     def __init__(self, data):
         super(SetProxy, self).__init__(data)
         self.cards_by_name = {}
+        self.cards_by_ascii_name = {}
 
         cards = []
         for c in self.cards:
@@ -99,6 +109,7 @@ class SetProxy(JSONProxy):
             card.set = self
 
             self.cards_by_name[card.name] = card
+            self.cards_by_ascii_name[card.ascii_name] = card
             cards.append(card)
 
         self.cards = sorted(cards)
@@ -120,6 +131,7 @@ class CardDb(object):
 
         self.cards_by_id = {}
         self.cards_by_name = {}
+        self.cards_by_ascii_name = {}
         self.sets = OrderedDict()
 
         # sort sets by release date
@@ -131,6 +143,7 @@ class CardDb(object):
             self.sets[s.code] = s
 
             self.cards_by_name.update(s.cards_by_name)
+            self.cards_by_ascii_name.update(s.cards_by_ascii_name)
             for card in s.cards:
                 if not hasattr(card, 'multiverseId'):
                     continue
