@@ -12,7 +12,7 @@ import six
 
 from .jsonproxy import JSONProxy
 
-ALL_SETS_URL = 'https://mtgjson.com/json/AllSets.json'
+ALL_SETS_URL = 'https://mtgjson.com/api/v5/AllPrintings.json'
 
 ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
 
@@ -50,6 +50,14 @@ class CardProxy(JSONProxy):
     def ascii_name(self):
         """Simplified name (ascii characters, lowercase) for card.""" 
         return getattr(self, 'asciiName', self.name.lower())
+
+    @property
+    def multiverseId(self):
+        """Easy access to the ID used on the WoTC gatherer website"""
+        try:
+            return int(getattr(self, 'identifiers')['multiverseId'])
+        except KeyError:
+            return None
 
     def __eq__(self, other):
         return self.name == other.name
@@ -136,7 +144,7 @@ class CardDb(object):
 
         # sort sets by release date
         sets = sorted(
-            six.itervalues(self._card_db),
+            six.itervalues(self._card_db['data']),
             key=itemgetter('releaseDate'))
         for _set in sets:
             s = SetProxy(_set)
