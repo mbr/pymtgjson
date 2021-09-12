@@ -20,7 +20,7 @@ setup(name='mtgjson',
       url='http://github.com/mbr/pymtgjson',
       license='MIT',
       packages=find_packages(exclude=['tests']),
-      install_requires=['docutils', 'requests', 'six'],
+      install_requires=['docutils', 'requests', 'requests-cache', 'six'],
       classifiers=[
           'Programming Language :: Python :: 2',
           'Programming Language :: Python :: 3',

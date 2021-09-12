@@ -7,7 +7,7 @@ import os
 import re
 import zipfile
 
-import requests
+from requests_cache import CachedSession
 import six
 
 from .jsonproxy import JSONProxy
@@ -180,7 +180,8 @@ class CardDb(object):
         :param db_url: URL to fetch.
         :return: A new :class:`~mtgjson.CardDb` instance.
         """
-        r = requests.get(db_url)
+        session = CachedSession()
+        r = session.get(db_url)
         r.raise_for_status()
 
         if r.headers['content-type'] == 'application/json':
