@@ -2,34 +2,19 @@
 
 import os
 import pytest
-import requests
+from requests_cache import CachedSession
 
 from mtgjson import CardDb, ALL_SETS_URL
 
 
-def download_set_file(url, fn):
-    tests_path = os.path.dirname(__file__)
-    fn = os.path.join(tests_path, fn)
-
-    if not os.path.exists(fn):
-        resp = requests.get(url)
-        resp.raise_for_status()
-
-        with open(fn, 'wb') as out:
-            out.write(resp.content)
-
-    return fn
-
-
-@pytest.fixture(scope='module',
-                params=['url', 'file'])
+@pytest.fixture(scope='module')
 def db(request):
-    if request.param == 'url':
-        return CardDb.from_url()
-    elif request.param == 'file':
-        return CardDb.from_file(
-            download_set_file(ALL_SETS_URL, 'AllSets.json')
-        )
+    session = CachedSession()
+    return CardDb.from_url(requests_session=session)
+
+@pytest.fixture(scope='module')
+def db_nocache(request):
+    return CardDb.from_url()
 
 
 def test_db_instantiation(db):
@@ -38,6 +23,12 @@ def test_db_instantiation(db):
 
 def test_get_card_by_name(db):
     card = db.cards_by_name['Sen Triplets']
+
+    assert card.flavorText == 'They are the masters of your mind.'
+
+@pytest.mark.not_cached
+def test_get_card_by_name_uncached(db_nocache):
+    card = db_nocache.cards_by_name['Sen Triplets']
 
     assert card.flavorText == 'They are the masters of your mind.'
 

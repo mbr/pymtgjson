@@ -7,7 +7,7 @@ import os
 import re
 import zipfile
 
-from requests_cache import CachedSession
+import requests
 import six
 
 from .jsonproxy import JSONProxy
@@ -172,7 +172,7 @@ class CardDb(object):
             return cls(json.load(inp))
 
     @classmethod
-    def from_url(cls, db_url=ALL_SETS_ZIP_URL):
+    def from_url(cls, db_url=ALL_SETS_ZIP_URL, requests_session=None):
         """Load card data from a URL.
 
         Uses :func:`requests.get` to fetch card data. Also handles zipfiles.
@@ -180,7 +180,10 @@ class CardDb(object):
         :param db_url: URL to fetch.
         :return: A new :class:`~mtgjson.CardDb` instance.
         """
-        session = CachedSession()
+        if requests_session:
+            session = requests_session
+        else:
+            session = requests
         r = session.get(db_url)
         r.raise_for_status()
 
