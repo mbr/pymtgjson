@@ -18,7 +18,7 @@ ALL_SETS_ZIP_URL = ALL_SETS_URL + '.zip'
 
 ALL_SETS_PATH = os.path.join(os.path.dirname(__file__), 'AllSets.json')
 
-_WS = re.compile('\s+')
+_WS = re.compile(r'\s+')
 
 
 @total_ordering
