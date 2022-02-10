@@ -2,38 +2,19 @@
 
 import os
 import pytest
-import requests
+from requests_cache import CachedSession
 
-from mtgjson import CardDb, ALL_SETS_URL, ALL_SETS_X_URL
-
-
-def download_set_file(url, fn):
-    tests_path = os.path.dirname(__file__)
-    fn = os.path.join(tests_path, fn)
-
-    if not os.path.exists(fn):
-        resp = requests.get(url)
-        resp.raise_for_status()
-
-        with open(fn, 'wb') as out:
-            out.write(resp.content)
-
-    return fn
+from mtgjson import CardDb, ALL_SETS_URL
 
 
-@pytest.fixture(scope='module',
-                params=['url', 'file', 'file-x'])
+@pytest.fixture(scope='module')
 def db(request):
-    if request.param == 'url':
-        return CardDb.from_url()
-    elif request.param == 'file':
-        return CardDb.from_file(
-            download_set_file(ALL_SETS_URL, 'AllSets.json')
-        )
-    elif request.param == 'file-x':
-        return CardDb.from_file(
-            download_set_file(ALL_SETS_X_URL, 'AllSets-x.json')
-        )
+    session = CachedSession()
+    return CardDb.from_url(requests_session=session)
+
+@pytest.fixture(scope='module')
+def db_nocache(request):
+    return CardDb.from_url()
 
 
 def test_db_instantiation(db):
@@ -43,7 +24,13 @@ def test_db_instantiation(db):
 def test_get_card_by_name(db):
     card = db.cards_by_name['Sen Triplets']
 
-    assert card.multiverseid == 180607
+    assert card.flavorText == 'They are the masters of your mind.'
+
+@pytest.mark.not_cached
+def test_get_card_by_name_uncached(db_nocache):
+    card = db_nocache.cards_by_name['Sen Triplets']
+
+    assert card.flavorText == 'They are the masters of your mind.'
 
 
 def test_get_card_by_id(db):
@@ -57,26 +44,26 @@ def test_get_sen_triplets(db):
 
     assert card.name == 'Sen Triplets'
     assert card.manaCost == '{2}{W}{U}{B}'
-    assert card.cmc == 5
-    assert card.colors == ['White', 'Blue', 'Black']
+    assert card.convertedManaCost == 5
+    assert card.colors == ['B', 'U', 'W']
     assert card.type == u'Legendary Artifact Creature — Human Wizard'
     assert card.supertypes == ['Legendary']
     assert card.types == ['Artifact', 'Creature']
     assert card.subtypes == ['Human', 'Wizard']
-    assert card.rarity == 'Mythic Rare'
+    assert card.rarity == 'mythic'
     assert card.text == ('At the beginning of your upkeep, choose target '
                          'opponent. This turn, that player can\'t cast spells '
-                         'or activate abilities and plays with his or her hand'
-                         ' revealed. You may play cards from that player\'s '
-                         'hand this turn.')
-    assert card.flavor == 'They are the masters of your mind.'
+                         'or activate abilities and plays with their hand '
+                         'revealed. You may play lands and cast spells from '
+                         'that player\'s hand this turn.')
+    assert card.flavorText == 'They are the masters of your mind.'
     assert card.artist == 'Greg Staples'
     assert card.number == '109'
     assert card.power == '3'
     assert card.toughness == '3'
     assert card.layout == 'normal'
-    assert card.multiverseid == 180607
-    assert card.imageName == 'sen triplets'
+    assert card.multiverseId == 180607
+    assert card.ascii_name == 'sen triplets'
 
 
 def test_set_list(db):
@@ -108,3 +95,10 @@ def test_different_sets_compare_nonequal(db):
     c2 = db.sets['ISD'].cards[0]
 
     assert c1 < c2
+
+
+def test_urls(db):
+    card = db.cards_by_id[23194]
+
+    assert card.img_url == 'https://gatherer.wizards.com/Handlers/Image.ashx?multiverseid=23194&type=card'
+    assert card.gatherer_url == 'https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=23194'
